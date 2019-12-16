@@ -1,0 +1,7 @@
+---
+# vars file for git_mirror
+_git_mirror_packages:
+  default:
+    - git_mirror
+
+git_mirror_packages: "{{ _git_mirror_packages[ansible_os_family] | default(_git_mirror_packages['default']) }}"

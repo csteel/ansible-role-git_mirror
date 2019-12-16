@@ -1,0 +1,8 @@
+---
+# handlers file for git_mirror
+- name: restart git_mirror
+  service:
+    name: "{{ git_mirror_service }}"
+    state: restarted
+  when:
+    - ansible_virtualization_type != "docker"

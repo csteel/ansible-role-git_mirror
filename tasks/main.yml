@@ -1,0 +1,24 @@
+---
+# tasks file for git_mirror
+- name: install git_mirror
+  package:
+    name: "{{ git_mirror_packages }}"
+    state: present
+  register: git_mirror_install_git_mirror
+  until: git_mirror_install_git_mirror is succeeded
+  retries: 3
+
+- name: configure git_mirror
+  template:
+    src: "{{ git_mirror_config_file }}.j2"
+    dest: "{{ git_mirror_config_directory }}/{{ git_mirror_config_file }}"
+  notify:
+    - restart git_mirror
+
+- name: start and enable git_mirror
+  service:
+    name: "{{ git_mirror_service }}"
+    state: started
+    enabled: yes
+  when:
+    - ansible_virtualization_type != "docker"
