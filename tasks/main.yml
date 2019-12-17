@@ -53,16 +53,16 @@
     repo: "{{ item.repo }}"
     dest: "{{ git_mirror_repository_parent_dir }}/{{ item.dest }}"
     accept_hostkey: yes
-    update: "{{ item.version | default(omit) }}"
+    update: "{{ item.update | default(git_mirror_update) | bool}}"
     version: "{{ item.version | default('HEAD') }}"
-    force: "{{ item.force | default(git_force) }}"
+    force: "{{ item.force | default(git_mirror_force) }}"
   with_items: "{{ git_mirror_repositories }}"
   become: yes
   become_user: "{{ git_mirror_username }}"
   when:
-    - git_repositories is defined
-    - git_repository_destination is defined
-    - git_username is defined
-    - getent_passwd[git_username] != none
+    - git_mirror_repositories is defined
+    - git_mirror_repository_parent_dir is defined
+    - git_mirror_username is defined
+    - getent_passwd[git_mirror_username] != none
   loop_control:
     label: "{{ item.dest }}"

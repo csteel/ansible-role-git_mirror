@@ -33,6 +33,10 @@ Requirements
 - Access to a repository containing packages, likely on the internet.
 - A recent version of Ansible. (Tests run on the last 3 release of Ansible.)
 
+When git_mirror_user is define a user of the same name needs to be present on the system - robertdebock.user
+When cloning via ssh an ssh public key from the taget must be present on the remote system - robertdebock.user and ???
+
+
 Role Variables
 --------------
 
