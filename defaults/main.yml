@@ -1,2 +1,34 @@
 ---
 # defaults file for git_mirror
+
+# The system username in /home where to place the gitconfig file.
+# git_mirror_username: johndoe
+
+# The group to own directories.
+# git_mirror_groupname: "{{ git_mirror_username }}"
+
+# Settings for git configuration.
+# git_mirror_user_email: johndoe@example.com
+# git_mirror_user_name: John Doe
+
+# Where to place the copies of the repositories.
+git_mirror_repository_parent_dir: /home/{{ git_mirror_username }}/repos
+
+# Should git force (overwrite locally changed) clone? (Can also be controlled
+# per repository, see below.
+git_mirror_force: no
+
+# Should exiting clone(s) be updated? (Can also be controlled on a per_repository basis
+git_mirror_update: no
+
+# The repositories to check out, bootstrap is pinned to a version, java will get HEAD/latest.
+# git_mirror_repositories:
+#   - repo: https://github.com/robertdebock/ansible-role-bootstrap.git
+#     dest: bootstrap
+#     version: 2.2.4
+#   - repo: ssh://git@github.com/robertdebock/ansible-role-java.git
+#     dest: java
+#   - repo: ssh://git@github.com/robertdebock/ansible-role-tomcat.git
+#     dest: tomcat
+#     force: yes
+

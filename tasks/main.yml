@@ -1,24 +1,68 @@
 ---
 # tasks file for git_mirror
-- name: install git_mirror
+- name: install git
   package:
     name: "{{ git_mirror_packages }}"
     state: present
-  register: git_mirror_install_git_mirror
-  until: git_mirror_install_git_mirror is succeeded
+  register: git_mirror_install_git
+  until: git_mirror_install_git is succeeded
   retries: 3
 
-- name: configure git_mirror
-  template:
-    src: "{{ git_mirror_config_file }}.j2"
-    dest: "{{ git_mirror_config_directory }}/{{ git_mirror_config_file }}"
-  notify:
-    - restart git_mirror
-
-- name: start and enable git_mirror
-  service:
-    name: "{{ git_mirror_service }}"
-    state: started
-    enabled: yes
+- name: see if the specified git_mirror_username user exists 
+  getent:
+    database: passwd
+    key: "{{ git_mirror_username }}"
+    fail_key: no
   when:
-    - ansible_virtualization_type != "docker"
+    - git_mirror_username is defined
+
+
+- name: Ensure we have a home directory for the git_mirror user
+  file:
+    path: /home/{{ git_mirror_username }}
+    state: directory
+    owner: "{{ git_mirror_username | default(omit) }}"
+    group: "{{ git_mirror_groupname | default(omit) }}"
+  when:
+    - getent_passwd is defined
+    - getent_passwd[git_mirror_username] != none
+
+- name: Ensure we have a ~/.gitconfig file for our user if the email and name are defined
+  template:
+    src: gitconfig.j2
+    dest: /home/{{ git_mirror_username }}/.gitconfig
+  when:
+    - git_mirror_user_email is defined
+    - git_mirror_user_name is defined
+    - git_mirror_username is defined
+    - getent_passwd[git_mirror_username] != none
+
+- name: Ensure the parent directory for our repositories exists
+  file:
+    path: "{{ git_mirror_repository_parent_dir }}"
+    state: directory
+    owner: "{{ git_mirror_username | default(omit) }}"
+    group: "{{ git_mirror_groupname | default(omit) }}"
+  when:
+    - git_mirror_username is defined
+    - git_mirror_repository_parent_dir is defined
+    - getent_passwd[git_mirror_username] != none
+
+- name: Clone or update our repositories
+  git:
+    repo: "{{ item.repo }}"
+    dest: "{{ git_mirror_repository_parent_dir }}/{{ item.dest }}"
+    accept_hostkey: yes
+    update: "{{ item.version | default(omit) }}"
+    version: "{{ item.version | default('HEAD') }}"
+    force: "{{ item.force | default(git_force) }}"
+  with_items: "{{ git_mirror_repositories }}"
+  become: yes
+  become_user: "{{ git_mirror_username }}"
+  when:
+    - git_repositories is defined
+    - git_repository_destination is defined
+    - git_username is defined
+    - getent_passwd[git_username] != none
+  loop_control:
+    label: "{{ item.dest }}"
